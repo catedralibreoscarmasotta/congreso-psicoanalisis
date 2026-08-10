@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel interno — La Masotta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=Archivo+Narrow:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --beige:#F4D8B5; --beige-light:#FBEAD0; --azul:#1236B5; --azul-profundo:#082A9B; --azul-texto:#08245C;
+  --coral:#F0443E; --verde:#008C4A; --rosa:#F18AC8; --paper:#FBF6EC;
+  --display:"Anton",sans-serif; --sans:"Archivo",sans-serif; --label:"Archivo Narrow",sans-serif;
+}
+*{ box-sizing:border-box; }
+body{ margin:0; background:var(--beige); color:var(--azul-texto); font-family:var(--sans); }
+h1,h2{ font-family:var(--display); text-transform:uppercase; font-weight:400; margin:0; }
+.wrap{ max-width:1180px; margin:0 auto; padding:40px 24px 80px; }
+
+/* ---- gate ---- */
+#gate{ min-height:100vh; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:22px; text-align:center; padding:24px; }
+#gate h1{ font-size:2rem; }
+#gate p{ opacity:.75; max-width:420px; }
+#gate input{ padding:14px 18px; border:2.5px solid var(--azul-texto); border-radius:12px; font-size:1rem; width:280px; background:var(--paper); }
+#gate button{ padding:14px 26px; border:2.5px solid var(--azul-texto); border-radius:999px; background:var(--coral); color:var(--paper);
+  font-family:var(--label); font-weight:700; letter-spacing:.05em; text-transform:uppercase; cursor:pointer; box-shadow:4px 4px 0 var(--azul-texto); }
+#gateError{ color:var(--coral); font-family:var(--label); font-weight:700; min-height:20px; }
+
+/* ---- panel ---- */
+#panel{ display:none; }
+.bar{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:26px; }
+.bar .brand{ font-size:1.4rem; }
+.controls{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:22px; }
+.controls input, .controls select{
+  padding:10px 14px; border:2px solid var(--azul-texto); border-radius:10px; font-family:var(--sans); background:var(--paper); font-size:.92rem;
+}
+.controls input{ min-width:200px; flex:1; }
+table{ width:100%; border-collapse:collapse; background:var(--paper); border:2.5px solid var(--azul-texto); border-radius:14px; overflow:hidden; }
+thead{ background:var(--azul); color:var(--paper); }
+th, td{ padding:12px 14px; text-align:left; font-size:.9rem; border-bottom:1px solid rgba(8,36,92,.12); }
+th{ font-family:var(--label); text-transform:uppercase; letter-spacing:.05em; cursor:pointer; user-select:none; }
+tbody tr:hover{ background:var(--beige-light); }
+.eje-tag{ display:inline-block; background:var(--rosa); color:var(--azul-texto); padding:3px 9px; border-radius:999px; font-family:var(--label); font-weight:700; font-size:.76rem; }
+.dl{ color:var(--verde); font-weight:700; text-decoration:none; }
+.empty, .loading, .err{ text-align:center; padding:40px; font-family:var(--label); opacity:.7; }
+.count{ font-family:var(--label); font-weight:700; margin-bottom:12px; }
+.logout{ background:none; border:2px solid var(--azul-texto); border-radius:999px; padding:8px 16px; font-family:var(--label); font-weight:700; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <h1>Panel interno</h1>
+  <p>Acceso exclusivo para la organización de las Jornadas y Congreso. Ingresá la contraseña para ver los trabajos recibidos.</p>
+  <input type="password" id="pw" placeholder="Contraseña">
+  <button id="pwBtn">Ingresar</button>
+  <div id="gateError"></div>
+</div>
+
+<div id="panel">
+  <div class="wrap">
+    <div class="bar">
+      <h1 class="brand">Trabajos recibidos</h1>
+      <button class="logout" id="logoutBtn">Cerrar sesión</button>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="searchTitulo" placeholder="Buscar por título…">
+      <input type="text" id="searchAutor" placeholder="Buscar por autor/a…">
+      <select id="filterEje"><option value="">Todos los ejes</option></select>
+      <select id="sortOrder">
+        <option value="desc">Más recientes primero</option>
+        <option value="asc">Más antiguos primero</option>
+      </select>
+    </div>
+
+    <div class="count" id="count"></div>
+    <div id="tableHolder"><div class="loading">Cargando trabajos…</div></div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+/* Mismas credenciales públicas (anon key) que en index.html */
+const SUPABASE_URL = "https://gkbmzzgodkwjopyazdbd.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_wi0g-oVEVaGU-vcdI93ZRQ_krc7yTXl";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* Contraseña de acceso al panel — cambiar antes de publicar.
+   Nota: esta es una protección liviana del lado del cliente, pensada
+   para uso interno simple. No reemplaza autenticación real (Supabase
+   Auth) si se necesita seguridad estricta. Ver README. */
+const ADMIN_PASSWORD = "masotta2026";
+
+const EJES = [
+  "Psicoanálisis en Instituciones",
+  "La pregunta por la práctica del acompañamiento terapéutico",
+  "Lo que la pandemia nos dejó",
+  "Experiencias de Extensión Universitaria",
+  "Redes sociales, entornos digitales y su impacto en la producción de subjetividad",
+  "El trabajo con niñas, niños y adolescentes",
+  "Educación: problemáticas y desafíos",
+  "Psicoanálisis y ¿su relación con la época?",
+  "Género, disidencias y diversidad sexual",
+  "Discapacidad: clínica y política",
+  "Consumos problemáticos",
+  "Salud mental: producciones culturales en el campo de los DDHH",
+  "Deporte, cultura y lazo social",
+  "El trabajo con adultos/as mayores"
+];
+const filterEje = document.getElementById('filterEje');
+EJES.forEach(e => { const o = document.createElement('option'); o.value = e; o.textContent = e; filterEje.appendChild(o); });
+
+const gate = document.getElementById('gate');
+const panel = document.getElementById('panel');
+const gateError = document.getElementById('gateError');
+
+document.getElementById('pwBtn').addEventListener('click', tryLogin);
+document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+
+function tryLogin(){
+  const val = document.getElementById('pw').value;
+  if (val === ADMIN_PASSWORD){
+    sessionStorage.setItem('masotta_admin_ok', '1');
+    gate.style.display = 'none';
+    panel.style.display = 'block';
+    loadData();
+  } else {
+    gateError.textContent = 'Contraseña incorrecta.';
+  }
+}
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  sessionStorage.removeItem('masotta_admin_ok');
+  location.reload();
+});
+if (sessionStorage.getItem('masotta_admin_ok') === '1'){
+  gate.style.display = 'none';
+  panel.style.display = 'block';
+  loadData();
+}
+
+let allRows = [];
+
+
+async function downloadPdf(row){
+  // New rows store the exact Storage path in storage_path.
+  // For older rows, recover it from the old public URL.
+  let path = row.storage_path || '';
+  if (!path && row.url){
+    const marker = '/public/pdfs/';
+    const i = row.url.indexOf(marker);
+    if (i !== -1) path = decodeURIComponent(row.url.slice(i + marker.length).split('?')[0]);
+    else if (!row.url.startsWith('http')) path = row.url;
+  }
+
+  if (!path){
+    alert('No encontramos la ruta del PDF para este trabajo.');
+    return;
+  }
+
+  const { data, error } = await supabase.storage
+    .from('pdfs')
+    .createSignedUrl(path, 3600, { download: true });
+
+  if (error || !data?.signedUrl){
+    alert('No pudimos generar el enlace de descarga: ' + (error?.message || 'Error desconocido'));
+    return;
+  }
+
+  window.location.href = data.signedUrl;
+}
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.download-btn');
+  if (!btn) return;
+  const row = allRows.find(x => String(x.id) === String(btn.dataset.id));
+  if (row) downloadPdf(row);
+});
+
+async function loadData(){
+  const holder = document.getElementById('tableHolder');
+  const { data, error } = await supabase.from('documentos').select('*').order('created_at', { ascending:false });
+  if (error){
+    holder.innerHTML = `<div class="err">No pudimos cargar los trabajos: ${error.message}</div>`;
+    return;
+  }
+  allRows = data || [];
+  render();
+}
+
+function render(){
+  const holder = document.getElementById('tableHolder');
+  const countEl = document.getElementById('count');
+  const qTitulo = document.getElementById('searchTitulo').value.trim().toLowerCase();
+  const qAutor = document.getElementById('searchAutor').value.trim().toLowerCase();
+  const eje = document.getElementById('filterEje').value;
+  const order = document.getElementById('sortOrder').value;
+
+  let rows = allRows.filter(r =>
+    (!qTitulo || (r.titulo||'').toLowerCase().includes(qTitulo)) &&
+    (!qAutor || (r.autor||'').toLowerCase().includes(qAutor)) &&
+    (!eje || r.eje === eje)
+  );
+  rows.sort((a,b) => {
+    const da = new Date(a.created_at).getTime(); const db = new Date(b.created_at).getTime();
+    return order === 'asc' ? da - db : db - da;
+  });
+
+  countEl.textContent = `${rows.length} trabajo${rows.length===1?'':'s'} encontrados`;
+
+  if (!rows.length){
+    holder.innerHTML = '<div class="empty">No se encontraron trabajos con estos filtros.</div>';
+    return;
+  }
+
+  const trs = rows.map(r => `
+    <tr>
+      <td>${escapeHtml(r.titulo||'')}</td>
+      <td>${escapeHtml(r.autor||'')}</td>
+      <td><span class="eje-tag">${escapeHtml(r.eje||'')}</span></td>
+      <td>${r.created_at ? new Date(r.created_at).toLocaleString('es-AR') : ''}</td>
+      <td>${(r.storage_path || r.url) ? `<button class="dl download-btn" data-id="${r.id}" type="button">Descargar PDF ↓</button>` : '—'}</td>
+    </tr>`).join('');
+
+  holder.innerHTML = `
+    <table>
+      <thead><tr><th>Título</th><th>Autor/a</th><th>Eje</th><th>Fecha</th><th>Archivo</th></tr></thead>
+      <tbody>${trs}</tbody>
+    </table>`;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+['searchTitulo','searchAutor','filterEje','sortOrder'].forEach(id => {
+  document.getElementById(id).addEventListener('input', render);
+  document.getElementById(id).addEventListener('change', render);
+});
+</script>
+</body>
+</html>
