@@ -40,6 +40,10 @@ thead{ background:var(--azul); color:var(--paper); }
 th, td{ padding:12px 14px; text-align:left; font-size:.9rem; border-bottom:1px solid rgba(8,36,92,.12); }
 th{ font-family:var(--label); text-transform:uppercase; letter-spacing:.05em; cursor:pointer; user-select:none; }
 tbody tr:hover{ background:var(--beige-light); }
+.modalidad-tag{display:inline-block;padding:4px 9px;border-radius:999px;font-family:var(--label);font-weight:700;font-size:.76rem;}
+.modalidad-tag.summary{background:#FBEAD0;color:var(--azul-texto);}
+.modalidad-tag.full{background:var(--coral);color:var(--paper);}
+
 .eje-tag{ display:inline-block; background:var(--rosa); color:var(--azul-texto); padding:3px 9px; border-radius:999px; font-family:var(--label); font-weight:700; font-size:.76rem; }
 .dl{ color:var(--verde); font-weight:700; text-decoration:none; }
 .empty, .loading, .err{ text-align:center; padding:40px; font-family:var(--label); opacity:.7; }
@@ -68,6 +72,11 @@ tbody tr:hover{ background:var(--beige-light); }
       <input type="text" id="searchTitulo" placeholder="Buscar por título…">
       <input type="text" id="searchAutor" placeholder="Buscar por autor/a…">
       <select id="filterEje"><option value="">Todos los ejes</option></select>
+      <select id="filterModalidad">
+        <option value="">Todas las modalidades</option>
+        <option value="Resumen">Resúmenes</option>
+        <option value="Trabajo completo">Trabajos completos</option>
+      </select>
       <select id="sortOrder">
         <option value="desc">Más recientes primero</option>
         <option value="asc">Más antiguos primero</option>
@@ -195,12 +204,14 @@ function render(){
   const qTitulo = document.getElementById('searchTitulo').value.trim().toLowerCase();
   const qAutor = document.getElementById('searchAutor').value.trim().toLowerCase();
   const eje = document.getElementById('filterEje').value;
+  const modalidad = document.getElementById('filterModalidad').value;
   const order = document.getElementById('sortOrder').value;
 
   let rows = allRows.filter(r =>
     (!qTitulo || (r.titulo||'').toLowerCase().includes(qTitulo)) &&
     (!qAutor || (r.autor||'').toLowerCase().includes(qAutor)) &&
-    (!eje || r.eje === eje)
+    (!eje || r.eje === eje) &&
+    (!modalidad || r.modalidad === modalidad)
   );
   rows.sort((a,b) => {
     const da = new Date(a.created_at).getTime(); const db = new Date(b.created_at).getTime();
@@ -219,13 +230,14 @@ function render(){
       <td>${escapeHtml(r.titulo||'')}</td>
       <td>${escapeHtml(r.autor||'')}</td>
       <td><span class="eje-tag">${escapeHtml(r.eje||'')}</span></td>
+      <td><span class="modalidad-tag ${r.modalidad === 'Trabajo completo' ? 'full' : 'summary'}">${escapeHtml(r.modalidad || '—')}</span></td>
       <td>${r.created_at ? new Date(r.created_at).toLocaleString('es-AR') : ''}</td>
       <td>${(r.storage_path || r.url) ? `<button class="dl download-btn" data-id="${r.id}" type="button">Descargar PDF ↓</button>` : '—'}</td>
     </tr>`).join('');
 
   holder.innerHTML = `
     <table>
-      <thead><tr><th>Título</th><th>Autor/a</th><th>Eje</th><th>Fecha</th><th>Archivo</th></tr></thead>
+      <thead><tr><th>Título</th><th>Autor/a</th><th>Eje</th><th>Modalidad</th><th>Fecha</th><th>Archivo</th></tr></thead>
       <tbody>${trs}</tbody>
     </table>`;
 }
@@ -234,7 +246,7 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-['searchTitulo','searchAutor','filterEje','sortOrder'].forEach(id => {
+['searchTitulo','searchAutor','filterEje','filterModalidad','sortOrder'].forEach(id => {
   document.getElementById(id).addEventListener('input', render);
   document.getElementById(id).addEventListener('change', render);
 });

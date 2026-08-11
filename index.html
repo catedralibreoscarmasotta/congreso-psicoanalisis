@@ -363,6 +363,15 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .progress-status.active{ display:block; }
 .form-error{ font-family:var(--label); font-weight:700; color:var(--coral); margin-top:10px; display:none; }
 .form-error.active{ display:block; }
+
+.modality-options{display:grid;gap:12px;margin-top:8px;}
+.modality-option{display:flex;gap:12px;align-items:flex-start;padding:15px 16px;border:2px solid rgba(8,36,92,.25);border-radius:14px;background:rgba(255,255,255,.28);cursor:pointer;}
+.modality-option:has(input:checked){border-color:var(--azul-texto);background:rgba(255,255,255,.55);box-shadow:4px 4px 0 rgba(8,36,92,.12);}
+.modality-option input{margin-top:4px;accent-color:var(--coral);}
+.modality-option span{display:flex;flex-direction:column;gap:4px;}
+.modality-option strong{font-family:var(--label);font-size:1rem;}
+.modality-option small{font-size:.88rem;line-height:1.4;opacity:.78;}
+
 .form-submit{ width:100%; text-align:center; margin-top:8px; border:2.5px solid var(--azul-texto); }
 .form-submit:disabled{ opacity:.5; cursor:not-allowed; }
 
@@ -606,6 +615,19 @@ footer{ background:var(--azul-texto); color:var(--beige-light); padding:26px 0; 
           <div class="field">
             <label for="autor">Autor/a</label>
             <input type="text" id="autor" name="autor" required placeholder="Nombre y apellido">
+          </div>
+          <div class="field">
+            <label>¿Qué querés presentar?</label>
+            <div class="modality-options">
+              <label class="modality-option">
+                <input type="radio" name="modalidad" value="Resumen" required>
+                <span><strong>Resumen</strong><small>Para participar mediante exposición. Fecha límite: 30 de septiembre.</small></span>
+              </label>
+              <label class="modality-option">
+                <input type="radio" name="modalidad" value="Trabajo completo">
+                <span><strong>Trabajo completo</strong><small>Para exposición y posibilidad de publicación en Editorial Porvenir. Fecha límite: 9 de octubre.</small></span>
+              </label>
+            </div>
           </div>
           <div class="field">
             <label for="archivo">Archivo (PDF)</label>
@@ -869,10 +891,13 @@ form.addEventListener('submit', async (e) => {
 
   const titulo = document.getElementById('titulo').value.trim();
   const autor = document.getElementById('autor').value.trim();
+  const modalidadEl = document.querySelector('input[name="modalidad"]:checked');
+  const modalidad = modalidadEl ? modalidadEl.value : '';
   const file = fileInput.files[0];
 
   if (!currentEje){ showError('Elegí primero un eje en el tablero.'); return; }
   if (!titulo || !autor){ showError('Completá título y autor/a.'); return; }
+  if (!modalidad){ showError('Elegí si vas a presentar un resumen o un trabajo completo.'); return; }
   if (!file){ showError('Adjuntá el archivo PDF de tu trabajo.'); return; }
   if (file.type !== 'application/pdf'){ showError('El archivo debe ser un PDF.'); return; }
   if (file.size > 10 * 1024 * 1024){ showError('El archivo supera los 10 MB permitidos.'); return; }
@@ -891,7 +916,7 @@ form.addEventListener('submit', async (e) => {
 
     // Keep the bucket private: store the Storage object path, not a public URL.
     const { error: insertError } = await supabase.from('documentos').insert([{
-      titulo, autor, eje: currentEje, url: path, storage_path: path
+      titulo, autor, eje: currentEje, modalidad, url: path, storage_path: path
     }]);
     if (insertError) throw insertError;
 
