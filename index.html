@@ -428,6 +428,17 @@ footer{ background:var(--azul-texto); color:var(--beige-light); padding:26px 0; 
 /* reveal on scroll */
 .reveal{ opacity:0; transform:translateY(24px); transition:opacity .7s var(--ease), transform .7s var(--ease); }
 .reveal.in{ opacity:1; transform:translateY(0); }
+
+.work-requirements{
+  margin:18px 0 22px;
+  padding:18px 20px;
+  border:2px solid var(--azul-texto);
+  border-radius:16px;
+  background:var(--beige-light);
+}
+.work-requirements h4{margin:0 0 10px;}
+.work-requirements p{margin:6px 0;}
+
 </style>
 </head>
 <body>
@@ -629,6 +640,14 @@ footer{ background:var(--azul-texto); color:var(--beige-light); padding:26px 0; 
               </label>
             </div>
           </div>
+
+          <div class="work-requirements">
+            <h4>Requisitos de presentación</h4>
+            <p><strong>Resumen:</strong> máximo 1 carilla.</p>
+            <p><strong>Trabajo completo:</strong> máximo 7 carillas.</p>
+            <p><strong>Tamaño de letra:</strong> 11 o 12.</p>
+          </div>
+
           <div class="field">
             <label for="archivo">Archivo (PDF)</label>
             <label class="file-drop" id="fileDrop" for="archivo">
