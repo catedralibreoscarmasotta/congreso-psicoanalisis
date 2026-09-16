@@ -93,13 +93,13 @@ tbody tr:hover{ background:var(--beige-light); }
   </div>
 </div>
 
-<script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
 
 /* Mismas credenciales públicas (anon key) que en index.html */
 const SUPABASE_URL = "https://gkbmzzgodkwjopyazdbd.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_wi0g-oVEVaGU-vcdI93ZRQ_krc7yTXl";
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* Contraseña de acceso al panel — cambiar antes de publicar.
    Nota: esta es una protección liviana del lado del cliente, pensada
@@ -231,7 +231,6 @@ function render(){
   const countEl = document.getElementById('count');
   const qTitulo = document.getElementById('searchTitulo').value.trim().toLowerCase();
   const qAutor = document.getElementById('searchAutor').value.trim().toLowerCase();
-  const qEmail = document.getElementById('searchEmail').value.trim().toLowerCase();
   const qEmail = document.getElementById('searchEmail').value.trim().toLowerCase();
   const eje = document.getElementById('filterEje').value;
   const modalidad = document.getElementById('filterModalidad').value;
