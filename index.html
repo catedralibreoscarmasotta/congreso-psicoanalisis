@@ -598,14 +598,14 @@ footer{ background:var(--azul-texto); color:var(--beige-light); padding:26px 0; 
     <div class="section-head reveal">
       <p class="eyebrow">Elegí tu recorrido</p>
       <h2>Los 14 ejes</h2>
-      <p class="lede">Elegí un eje dentro del cual se enmarque tu trabajo. Al seleccionarlo, la ficha avanza por el tablero y se abre el formulario de carga.</p>
+      <p class="lede">Consultá los ejes temáticos del Congreso. La recepción de trabajos está cerrada.</p>
     </div>
 
     <div class="board-wrap reveal">
       <div class="board-token" id="boardToken"></div>
       <div class="board" id="board"><!-- filled by JS --></div>
     </div>
-    <p class="board-help reveal">Consultá los ejes temáticos del Congreso.</p>
+    <p class="board-help reveal">Explorá los ejes temáticos del Congreso.</p>
   </div>
 </section>
 
@@ -696,20 +696,7 @@ footer{ background:var(--azul-texto); color:var(--beige-light); padding:26px 0; 
 <footer>La Masotta — Facultad de Psicología, Universidad Nacional de Rosario · <a href="admin.html" style="text-decoration:underline;">Panel interno</a></footer>
 
 <!-- ============================== SUPABASE ============================== -->
-<script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-/* -----------------------------------------------------------
-   CONFIGURACIÓN — completar con los valores del proyecto Supabase.
-   Equivalen a NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY.
-   La anon key es pública por diseño (se usa junto con Row Level
-   Security en Supabase); nunca poner acá la service_role key.
------------------------------------------------------------- */
-const SUPABASE_URL = "https://gkbmzzgodkwjopyazdbd.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_wi0g-oVEVaGU-vcdI93ZRQ_krc7yTXl";
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+<script>
 const EJES = [
   "Psicoanálisis en Instituciones",
   "La pregunta por la práctica del acompañamiento terapéutico",
@@ -727,125 +714,91 @@ const EJES = [
   "Deporte, cultura y lazo social"
 ];
 
-/* ---------- Render board (7 x 2 serpentine) ---------- */
+// Render del tablero de ejes: la selección solo lleva al aviso de recepción cerrada.
 const board = document.getElementById('board');
-const ROWS = [EJES.slice(0,7), EJES.slice(7,14)];
-let cellIndex = 0;
-ROWS.forEach((row, r) => {
-  const rowEl = document.createElement('div');
-  rowEl.className = 'board-row';
-  row.forEach((title, i) => {
-    cellIndex++;
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'axis-cell';
-    btn.dataset.eje = title;
-    btn.dataset.num = String(cellIndex).padStart(2,'0');
-    btn.innerHTML = `<span class="axis-num">${btn.dataset.num}</span><span class="axis-title">${title}</span>`;
-    btn.addEventListener('click', () => selectEje(btn));
-    rowEl.appendChild(btn);
-  });
-  board.appendChild(rowEl);
-});
-
-/* ---------- Hero decorative pawns on the winding path ---------- */
-const heroPath = document.getElementById('heroPath');
-const heroPawns = document.getElementById('heroPawns');
-const pawnColors = ['#F0443E','#008C4A','#1236B5','#F18AC8'];
-if (heroPath) {
-  const len = heroPath.getTotalLength();
-  pawnColors.forEach((c, i) => {
-    const pt = heroPath.getPointAtLength((len / pawnColors.length) * i + 40);
-    const g = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    g.setAttribute('cx', pt.x); g.setAttribute('cy', pt.y - 20);
-    g.setAttribute('r', 14); g.setAttribute('fill', c);
-    g.setAttribute('stroke', '#08245C'); g.setAttribute('stroke-width', '3');
-    heroPawns.appendChild(g);
-  });
-}
-
-/* ---------- Board token movement ---------- */
-const token = document.getElementById('boardToken');
+const boardToken = document.getElementById('boardToken');
 let selectedBtn = null;
-
-function selectEje(btn){
+function positionToken(btn) {
+  if (!boardToken || !btn) return;
+  const boardWrap = btn.closest('.board-wrap');
+  if (!boardWrap) return;
+  const wrapRect = boardWrap.getBoundingClientRect();
+  const btnRect = btn.getBoundingClientRect();
+  boardToken.style.opacity = '1';
+  boardToken.style.left = (btnRect.left - wrapRect.left + btnRect.width / 2 - 13) + 'px';
+  boardToken.style.top = (btnRect.top - wrapRect.top - 18) + 'px';
+}
+function selectEje(btn) {
   if (selectedBtn) selectedBtn.classList.remove('selected');
   selectedBtn = btn;
   btn.classList.add('selected');
-
-  const boardWrap = btn.closest('.board-wrap');
-  const wrapRect = boardWrap.getBoundingClientRect();
-  const btnRect = btn.getBoundingClientRect();
-  token.style.opacity = '1';
-  token.style.left = (btnRect.left - wrapRect.left + btnRect.width/2 - 13) + 'px';
-  token.style.top = (btnRect.top - wrapRect.top - 18) + 'px';
-
-  const num = btn.dataset.num;
-  const eje = btn.dataset.eje;
-  document.getElementById('ejeBadgeNum').textContent = num;
-  document.getElementById('ejeBadgeText').textContent = eje;
-  currentEje = eje;
-
-  document.getElementById('presenta').scrollIntoView({ behavior:'smooth', block:'start' });
-  showFormStep();
+  positionToken(btn);
+  document.getElementById('presenta')?.scrollIntoView({behavior:'smooth', block:'start'});
+}
+if (board) {
+  const rows = [EJES.slice(0, 7), EJES.slice(7, 14)];
+  let cellIndex = 0;
+  rows.forEach(row => {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'board-row';
+    row.forEach(title => {
+      cellIndex++;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'axis-cell';
+      btn.dataset.eje = title;
+      btn.dataset.num = String(cellIndex).padStart(2, '0');
+      btn.innerHTML = `<span class="axis-num">${btn.dataset.num}</span><span class="axis-title">${title}</span>`;
+      btn.addEventListener('click', () => selectEje(btn));
+      rowEl.appendChild(btn);
+    });
+    board.appendChild(rowEl);
+  });
 }
 
-let currentEje = null;
-
-/* ---------- File input ---------- */
-const fileInput = document.getElementById('archivo');
-const fileDrop = document.getElementById('fileDrop');
-const fileNameEl = document.getElementById('fileName');
-const fileDropText = document.getElementById('fileDropText');
-
-fileInput.addEventListener('change', () => {
-  const f = fileInput.files[0];
-  if (f){
-    fileNameEl.textContent = `${f.name} (${(f.size/1024/1024).toFixed(2)} MB)`;
-    fileDropText.textContent = 'Archivo seleccionado:';
-  }
-});
-['dragover','dragenter'].forEach(ev => fileDrop.addEventListener(ev, e => { e.preventDefault(); fileDrop.classList.add('drag'); }));
-['dragleave','drop'].forEach(ev => fileDrop.addEventListener(ev, e => { e.preventDefault(); fileDrop.classList.remove('drag'); }));
-fileDrop.addEventListener('drop', e => {
-  const f = e.dataTransfer.files[0];
-  if (f){ fileInput.files = e.dataTransfer.files; fileInput.dispatchEvent(new Event('change')); }
-});
-
-/* ---------- Form submit ---------- */
-const authorsList = document.getElementById('authorsList');
-const addAuthorBtn = document.getElementById('addAuthor');
-const autorHidden = document.getElementById('autor');
-
-function syncAuthors() {
-  const rows = [...authorsList.querySelectorAll('.author-row')];
-  const authors = rows.map(r => r.querySelector('[name="autor_individual"]')?.value.trim()).filter(Boolean);
-  const emails = rows.map(r => r.querySelector('[name="email_individual"]')?.value.trim()).filter(Boolean);
-  autorHidden.value = authors.join(' · ');
-  emailHidden.value = emails.join(' · ');
+// Ilustración decorativa del recorrido.
+const heroPath = document.getElementById('heroPath');
+const heroPawns = document.getElementById('heroPawns');
+if (heroPath && heroPawns && typeof heroPath.getTotalLength === 'function') {
+  const pawnColors = ['#F0443E', '#008C4A', '#1236B5', '#F18AC8'];
+  const len = heroPath.getTotalLength();
+  pawnColors.forEach((color, i) => {
+    const pt = heroPath.getPointAtLength((len / pawnColors.length) * i + 40);
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', pt.x);
+    circle.setAttribute('cy', pt.y - 20);
+    circle.setAttribute('r', 14);
+    circle.setAttribute('fill', color);
+    circle.setAttribute('stroke', '#08245C');
+    circle.setAttribute('stroke-width', '3');
+    heroPawns.appendChild(circle);
+  });
 }
-addAuthorBtn.addEventListener('click', () => {
-  const row = document.createElement('div'); row.className='author-row';
-  row.innerHTML = `<input type="text" name="autor_individual" required placeholder="Nombre y apellido"><input type="email" name="email_individual" required placeholder="Correo electrónico"><button type="button" class="remove-author" aria-label="Eliminar autor/a">×</button>`;
-  row.querySelectorAll('input').forEach(x=>x.addEventListener('input',syncAuthors));
-  row.querySelector('.remove-author').addEventListener('click',()=>{row.remove();syncAuthors();});
-  authorsList.appendChild(row);
-});
-authorsList.querySelectorAll('input').forEach(x=>x.addEventListener('input',syncAuthors));
-// El formulario público está cerrado; no se inicializan sus eventos.\n\n/* ---------- Nav toggle (mobile) ---------- */
+
+// Navegación móvil.
 const navToggle = document.getElementById('navToggle');
 const navLinks = document.getElementById('navLinks');
-navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
-navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+if (navToggle && navLinks) {
+  navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+}
 
-/* ---------- Scroll reveal ---------- */
-const io = new IntersectionObserver((entries) => {
-  entries.forEach(en => { if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
-}, { threshold:.12 });
-document.querySelectorAll('.reveal').forEach(el => io.observe(el));
-
-/* keep token positioned correctly on resize */
-window.addEventListener('resize', () => { if (selectedBtn) selectEje(selectedBtn); });
+// Animaciones de aparición; fallback para navegadores sin IntersectionObserver.
+const revealElements = document.querySelectorAll('.reveal');
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+        io.unobserve(entry.target);
+      }
+    });
+  }, {threshold: 0.12});
+  revealElements.forEach(el => io.observe(el));
+} else {
+  revealElements.forEach(el => el.classList.add('in'));
+}
+window.addEventListener('resize', () => { if (selectedBtn) positionToken(selectedBtn); });
 </script>
 </body>
 </html>
