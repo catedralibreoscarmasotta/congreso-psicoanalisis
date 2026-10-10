@@ -72,7 +72,21 @@ tbody tr:hover{ background:var(--beige-light); }
       <button class="logout" id="logoutBtn">Cerrar sesión</button>
     </div>
 
-    <div class="controls">
+    <section style="background:var(--paper);border:2.5px solid var(--azul-texto);border-radius:14px;padding:22px;margin-bottom:24px;">
+    <h2 style="font-size:1.4rem;margin-bottom:14px;">Cargar trabajo excepcional</h2>
+    <p style="margin:0 0 16px;">Usá este formulario solo para trabajos que la organización autorice después del cierre.</p>
+    <form id="manualUploadForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+      <label>Título<input id="manualTitulo" required style="display:block;width:100%;padding:10px;margin-top:5px;"></label>
+      <label>Autor/a o autores/as<input id="manualAutor" required style="display:block;width:100%;padding:10px;margin-top:5px;"></label>
+      <label>Correo electrónico<input id="manualEmail" type="text" required style="display:block;width:100%;padding:10px;margin-top:5px;"></label>
+      <label>Eje temático<select id="manualEje" required style="display:block;width:100%;padding:10px;margin-top:5px;"><option value="">Elegir eje…</option></select></label>
+      <label>Modalidad<select id="manualModalidad" required style="display:block;width:100%;padding:10px;margin-top:5px;"><option value="">Elegir…</option><option>Resumen</option><option>Trabajo completo</option></select></label>
+      <label>Archivo PDF<input id="manualPdf" type="file" accept="application/pdf,.pdf" required style="display:block;width:100%;padding:10px;margin-top:5px;"></label>
+      <button type="submit" id="manualSubmit" style="padding:12px 18px;background:var(--coral);color:white;border:2px solid var(--azul-texto);border-radius:999px;font-weight:700;cursor:pointer;">Subir trabajo</button>
+      <p id="manualStatus" style="grid-column:1/-1;margin:0;"></p>
+    </form>
+  </section>
+  <div class="controls">
       <input type="text" id="searchTitulo" placeholder="Buscar por título…">
       <input type="text" id="searchAutor" placeholder="Buscar por autor/a…">
       <input type="text" id="searchEmail" placeholder="Buscar por correo…">
@@ -93,12 +107,13 @@ tbody tr:hover{ background:var(--beige-light); }
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 /* Mismas credenciales públicas (anon key) que en index.html */
 const SUPABASE_URL = "https://gkbmzzgodkwjopyazdbd.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_wi0g-oVEVaGU-vcdI93ZRQ_krc7yTXl";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* Contraseña de acceso al panel — cambiar antes de publicar.
    Nota: esta es una protección liviana del lado del cliente, pensada
@@ -124,6 +139,8 @@ const EJES = [
 ];
 const filterEje = document.getElementById('filterEje');
 EJES.forEach(e => { const o = document.createElement('option'); o.value = e; o.textContent = e; filterEje.appendChild(o); });
+const manualEje = document.getElementById('manualEje');
+EJES.forEach(e => { const o = document.createElement('option'); o.value = e; o.textContent = e; manualEje.appendChild(o); });
 
 const gate = document.getElementById('gate');
 const panel = document.getElementById('panel');
@@ -132,26 +149,13 @@ const gateError = document.getElementById('gateError');
 document.getElementById('pwBtn').addEventListener('click', tryLogin);
 document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
 
-function initSupabaseClient(){
-  if (!window.supabase || !window.supabase.createClient) {
-    throw new Error('No se pudo cargar Supabase.');
-  }
-  window.sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  return window.sbClient;
-}
-
 function tryLogin(){
   const val = document.getElementById('pw').value;
   if (val === ADMIN_PASSWORD){
-    try {
-      initSupabaseClient();
-      sessionStorage.setItem('masotta_admin_ok', '1');
-      gate.style.display = 'none';
-      panel.style.display = 'block';
-      loadData();
-    } catch (err) {
-      gateError.textContent = 'Error al cargar el panel: ' + err.message;
-    }
+    sessionStorage.setItem('masotta_admin_ok', '1');
+    gate.style.display = 'none';
+    panel.style.display = 'block';
+    loadData();
   } else {
     gateError.textContent = 'Contraseña incorrecta.';
   }
@@ -161,17 +165,9 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
   location.reload();
 });
 if (sessionStorage.getItem('masotta_admin_ok') === '1'){
-  try {
-    initSupabaseClient();
-    gate.style.display = 'none';
-    panel.style.display = 'block';
-    loadData();
-  } catch (err) {
-    sessionStorage.removeItem('masotta_admin_ok');
-    gate.style.display = 'flex';
-    panel.style.display = 'none';
-    gateError.textContent = 'Error al cargar el panel: ' + err.message;
-  }
+  gate.style.display = 'none';
+  panel.style.display = 'block';
+  loadData();
 }
 
 let allRows = [];
@@ -193,7 +189,7 @@ async function downloadPdf(row){
     return;
   }
 
-  const { data, error } = await sbClient.storage
+  const { data, error } = await supabase.storage
     .from('pdfs')
     .createSignedUrl(path, 3600, { download: true });
 
@@ -221,9 +217,9 @@ async function deleteWork(row){
     const i = row.url.indexOf(marker);
     if (i !== -1) path = decodeURIComponent(row.url.slice(i + marker.length).split('?')[0]);
   }
-  const { error } = await sbClient.from('documentos').delete().eq('id', row.id);
+  const { error } = await supabase.from('documentos').delete().eq('id', row.id);
   if (error) { alert('No se pudo borrar el trabajo: ' + error.message); return; }
-  if (path) await sbClient.storage.from('pdfs').remove([path]);
+  if (path) await supabase.storage.from('pdfs').remove([path]);
   allRows = allRows.filter(x => String(x.id) !== String(row.id));
   render();
   alert('Trabajo borrado correctamente.');
@@ -237,7 +233,7 @@ document.addEventListener('click', e => {
 
 async function loadData(){
   const holder = document.getElementById('tableHolder');
-  const { data, error } = await sbClient.from('documentos').select('*').order('created_at', { ascending:false });
+  const { data, error } = await supabase.from('documentos').select('*').order('created_at', { ascending:false });
   if (error){
     holder.innerHTML = `<div class="err">No pudimos cargar los trabajos: ${error.message}</div>`;
     return;
@@ -293,6 +289,48 @@ function render(){
       <tbody>${trs}</tbody>
     </table>`;
 }
+
+
+document.getElementById('manualUploadForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const status = document.getElementById('manualStatus');
+  const button = document.getElementById('manualSubmit');
+  const titulo = document.getElementById('manualTitulo').value.trim();
+  const autor = document.getElementById('manualAutor').value.trim();
+  const email = document.getElementById('manualEmail').value.trim();
+  const eje = document.getElementById('manualEje').value;
+  const modalidad = document.getElementById('manualModalidad').value;
+  const file = document.getElementById('manualPdf').files[0];
+  if (!titulo || !autor || !email || !eje || !modalidad || !file) {
+    status.textContent = 'Completá todos los campos y adjuntá el PDF.'; return;
+  }
+  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+    status.textContent = 'El archivo debe ser PDF.'; return;
+  }
+  if (file.size > 10 * 1024 * 1024) { status.textContent = 'El PDF supera los 10 MB.'; return; }
+  button.disabled = true;
+  status.textContent = 'Subiendo archivo y registrando trabajo…';
+  try {
+    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    const path = `${Date.now()}_${safeName}`;
+    const { error: uploadError } = await supabase.storage.from('pdfs').upload(path, file, {cacheControl:'3600', upsert:false});
+    if (uploadError) throw uploadError;
+    const { error: insertError } = await supabase.from('documentos').insert([{
+      titulo, autor, email, eje, modalidad, url:path, storage_path:path
+    }]);
+    if (insertError) {
+      await supabase.storage.from('pdfs').remove([path]);
+      throw insertError;
+    }
+    status.textContent = 'Trabajo cargado correctamente.';
+    document.getElementById('manualUploadForm').reset();
+    await loadData();
+  } catch (err) {
+    status.textContent = 'No se pudo cargar el trabajo: ' + (err.message || 'error desconocido');
+  } finally {
+    button.disabled = false;
+  }
+});
 
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

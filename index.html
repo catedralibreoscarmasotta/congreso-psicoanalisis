@@ -414,23 +414,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .wk-quote small{ display:block; font-family:var(--sans); font-weight:500; font-size:.95rem; text-transform:none; color:var(--beige-light); margin-top:10px; letter-spacing:0; }
 @media (max-width:700px){ .workshops{ grid-template-columns:1fr; } }
 
-.wk-card .meet-btn{
-  display:inline-block; margin-top:18px; padding:10px 16px;
-  border:2px solid var(--paper); border-radius:999px;
-  color:var(--azul-texto); background:var(--rosa);
-  font-family:var(--label); font-weight:700; text-decoration:none;
-  text-transform:uppercase; letter-spacing:.04em;
-  transition:transform .15s ease, box-shadow .15s ease;
-}
-.wk-card .meet-btn:hover{ transform:translate(-2px,-2px); box-shadow:4px 4px 0 var(--paper); }
-.comites-grid{ display:grid; grid-template-columns:1fr 1fr; gap:26px; margin-top:10px; }
-.comite-card{ border:3px solid var(--azul-texto); border-radius:22px; padding:30px; background:var(--paper); box-shadow:5px 5px 0 var(--azul-texto); }
-.comite-card h3{ font-family:var(--display); font-weight:400; text-transform:uppercase; font-size:1.5rem; color:var(--coral); margin:0 0 18px; }
-.comite-card ul{ list-style:none; padding:0; margin:0; }
-.comite-card li{ padding:9px 0; border-bottom:1px solid rgba(8,36,92,.12); font-size:1rem; }
-.comite-card li:last-child{ border-bottom:0; }
-@media (max-width:700px){ .comites-grid{ grid-template-columns:1fr; } }
-
 /* ============================================================
    CIERRE
    ============================================================ */
@@ -478,7 +461,6 @@ footer{ background:var(--azul-texto); color:var(--beige-light); padding:26px 0; 
       <li><a href="#ejes">Ejes</a></li>
       <li><a href="#presenta">Presentá</a></li>
       <li><a href="#talleres">Talleres</a></li>
-      <li><a href="#comites">Comités</a></li>
       <li><a href="#congreso">Congreso</a></li>
     </ul>
     <a href="#presenta" class="nav-cta">Presentá tu trabajo</a>
@@ -623,87 +605,24 @@ footer{ background:var(--azul-texto); color:var(--beige-light); padding:26px 0; 
       <div class="board-token" id="boardToken"></div>
       <div class="board" id="board"><!-- filled by JS --></div>
     </div>
-    <p class="board-help reveal">Hacé click en un casillero para seleccionar tu eje y subir tu trabajo.</p>
+    <p class="board-help reveal">Consultá los ejes temáticos del Congreso.</p>
   </div>
 </section>
 
 <svg class="path-divider" viewBox="0 0 1200 72" preserveAspectRatio="none" aria-hidden="true"><path d="M0,36 Q150,0 300,36 T600,36 T900,36 T1200,36" fill="none" stroke="#08245C" stroke-width="3"/></svg>
 
-<!-- ============================== FORM ============================== -->
+<!-- ============================== RECEPCIÓN CERRADA ============================== -->
 <section class="section" id="presenta">
   <div class="wrap">
     <div class="section-head reveal">
-      <p class="eyebrow">Subí tu trabajo</p>
-      <h2>Una estación más en el recorrido</h2>
+      <p class="eyebrow">Convocatoria finalizada</p>
+      <h2>Recepción de trabajos cerrada</h2>
     </div>
-
-    <div class="form-shell reveal" id="formShell">
-      <div id="formStep">
-        <div class="form-eje-badge" id="ejeBadge">
-          <span class="num" id="ejeBadgeNum">—</span>
-          <span id="ejeBadgeText">Elegí un eje en el tablero de arriba</span>
-        </div>
-        <form id="uploadForm">
-          <div class="field">
-            <label for="titulo">Título del trabajo</label>
-            <input type="text" id="titulo" name="titulo" required placeholder="Nombre de tu trabajo">
-          </div>
-          <div class="field">
-            <label>¿Quiénes presentan el trabajo?</label>
-            <div class="authors-list" id="authorsList">
-              <div class="author-row">
-                <input type="text" name="autor_individual" required placeholder="Nombre y apellido">
-                <input type="email" name="email_individual" required placeholder="Correo electrónico">
-              </div>
-            </div>
-            <button type="button" class="add-author" id="addAuthor">+ Agregar otro/a autor/a</button>
-            <input type="hidden" id="autor" name="autor">
-            <input type="hidden" id="email" name="email">
-            <p class="field-note">Si presentan varias personas, agregá el correo electrónico de cada una.</p>
-          </div>
-          <div class="field">
-            <label>¿Qué querés presentar?</label>
-            <div class="modality-options">
-              <label class="modality-option">
-                <input type="radio" name="modalidad" value="Resumen" required>
-                <span><strong>Resumen</strong><small>Para participar mediante exposición. Fecha límite: 30 de septiembre.</small></span>
-              </label>
-              <label class="modality-option">
-                <input type="radio" name="modalidad" value="Trabajo completo">
-                <span><strong>Trabajo completo</strong><small>Para exposición y posibilidad de publicación en Editorial Porvenir. Fecha límite: 9 de octubre.</small></span>
-              </label>
-            </div>
-          </div>
-
-          <div class="work-requirements">
-            <h4>Requisitos de presentación</h4>
-            <p><strong>Resumen:</strong> máximo 1 carilla.</p>
-            <p><strong>Trabajo completo:</strong> máximo 7 carillas.</p>
-            <p><strong>Tamaño de letra:</strong> 11 o 12.</p>
-          </div>
-
-          <div class="field">
-            <label for="archivo">Archivo (PDF)</label>
-            <label class="file-drop" id="fileDrop" for="archivo">
-              <span id="fileDropText">Hacé click o arrastrá tu PDF acá</span>
-              <span class="file-hint">Solo archivos .pdf — Peso máximo permitido: 10 MB</span>
-              <span class="file-name" id="fileName"></span>
-              <input type="file" id="archivo" name="archivo" accept="application/pdf">
-            </label>
-          </div>
-          <div class="progress-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
-          <div class="progress-status" id="progressStatus">Subiendo tu trabajo…</div>
-          <div class="form-error" id="formError"></div>
-          <button type="submit" class="btn btn-primary form-submit" id="submitBtn">Subir mi trabajo</button>
-        </form>
-      </div>
-
-      <div class="confirm-screen" id="confirmScreen">
-        <div class="confirm-token"></div>
-        <h3>¡Trabajo recibido!</h3>
-        <p>Gracias por participar.<br>Recibimos tu presentación correctamente.</p>
-        <button class="btn btn-secondary confirm-again" id="confirmAgain">Enviar otro trabajo</button>
-      </div>
+    <div class="form-shell reveal" style="text-align:center;padding:clamp(28px,5vw,64px);">
+      <p style="font-size:1.2rem;line-height:1.65;max-width:760px;margin:0 auto;">
+        Finalizó el plazo de presentación de trabajos para el Congreso.
+        ¡Gracias a todas las personas que participaron!
+      </p>
     </div>
   </div>
 </section>
@@ -748,25 +667,10 @@ footer{ background:var(--azul-texto); color:var(--beige-light); padding:26px 0; 
         <h3>Juan Pablo Carrascal</h3>
         <p>Taller de escritura de trabajos</p>
       </div>
-
       <div class="wk-card">
         <div class="wk-time">Jueves — 18:30 hs</div>
         <h3>Sabrina Romero Hechem</h3>
         <p>Taller de escritura de trabajos</p>
-      </div>
-
-      <div class="wk-card">
-        <div class="wk-time">Martes — 13:00 hs · VIRTUAL</div>
-        <h3>Iván Scarpolini</h3>
-        <p>Taller virtual de escritura de trabajos</p>
-        <a class="meet-btn" href="https://meet.google.com/gzg-adzc-vdn" target="_blank" rel="noopener noreferrer">Ingresar al Meet</a>
-      </div>
-
-      <div class="wk-card">
-        <div class="wk-time">Miércoles — 21:00 hs · VIRTUAL</div>
-        <h3>Julián Scetti</h3>
-        <p>Taller virtual de escritura de trabajos</p>
-        <a class="meet-btn" href="https://meet.google.com/uiz-wgxz-eor" target="_blank" rel="noopener noreferrer">Ingresar al Meet</a>
       </div>
     </div>
     <div class="wk-quote reveal">Vení con una idea, una pregunta o un borrador.<small>No hace falta llegar con el trabajo terminado.</small></div>
@@ -774,40 +678,6 @@ footer{ background:var(--azul-texto); color:var(--beige-light); padding:26px 0; 
 </section>
 
 <svg class="path-divider" viewBox="0 0 1200 72" preserveAspectRatio="none" aria-hidden="true"><path d="M0,36 Q150,70 300,36 T600,36 T900,36 T1200,36" fill="none" stroke="#08245C" stroke-width="3"/></svg>
-
-<!-- ============================== COMITÉS ============================== -->
-<section class="section" id="comites">
-  <div class="wrap">
-    <div class="section-head reveal">
-      <p class="eyebrow">Quiénes nos acompañan</p>
-      <h2>Comités</h2>
-    </div>
-    <div class="comites-grid reveal">
-      <div class="comite-card">
-        <h3>Comité evaluador externo</h3>
-        <ul>
-          <li>Alicia Stolkiner</li>
-          <li>Marcela Bottinelli</li>
-        </ul>
-      </div>
-      <div class="comite-card">
-        <h3>Comité científico</h3>
-        <ul>
-          <li>Mónica Gonzalez</li>
-          <li>Clara Castronuovo</li>
-          <li>Nahuel Castillo</li>
-          <li>Ruben Caligaris</li>
-          <li>Sabrina Romero Hechem</li>
-          <li>Carolina Del Fresno</li>
-          <li>Alvaro Uribe</li>
-          <li>Antonela Plaza</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<svg class="path-divider" viewBox="0 0 1200 72" preserveAspectRatio="none" aria-hidden="true"><path d="M0,36 Q150,0 300,36 T600,36 T900,36 T1200,36" fill="none" stroke="#08245C" stroke-width="3"/></svg>
 
 <!-- ============================== CIERRE ============================== -->
 <section class="section on-blue closing" id="congreso">
@@ -962,110 +832,7 @@ addAuthorBtn.addEventListener('click', () => {
   authorsList.appendChild(row);
 });
 authorsList.querySelectorAll('input').forEach(x=>x.addEventListener('input',syncAuthors));
-const emailHidden = document.getElementById('email');
-
-const form = document.getElementById('uploadForm');
-const submitBtn = document.getElementById('submitBtn');
-const progressWrap = document.getElementById('progressWrap');
-const progressBar = document.getElementById('progressBar');
-const progressStatus = document.getElementById('progressStatus');
-const formError = document.getElementById('formError');
-const formStep = document.getElementById('formStep');
-const confirmScreen = document.getElementById('confirmScreen');
-
-function showError(msg){
-  formError.textContent = msg;
-  formError.classList.add('active');
-}
-function clearError(){
-  formError.textContent = '';
-  formError.classList.remove('active');
-}
-function showFormStep(){
-  formStep.style.display = '';
-  confirmScreen.classList.remove('active');
-}
-
-let fakeProgressTimer = null;
-function startFakeProgress(){
-  progressWrap.classList.add('active');
-  progressStatus.classList.add('active');
-  progressStatus.textContent = 'Subiendo tu trabajo…';
-  let pct = 0;
-  progressBar.style.width = '0%';
-  fakeProgressTimer = setInterval(() => {
-    pct = Math.min(pct + Math.random()*12, 90);
-    progressBar.style.width = pct + '%';
-  }, 220);
-}
-function finishProgress(ok){
-  clearInterval(fakeProgressTimer);
-  progressBar.style.width = '100%';
-  progressStatus.textContent = ok ? 'Listo.' : 'Ocurrió un error.';
-  setTimeout(() => {
-    progressWrap.classList.remove('active');
-    progressStatus.classList.remove('active');
-  }, 700);
-}
-
-form.addEventListener('submit', async (e) => {
-  syncAuthors();
-  e.preventDefault();
-  clearError();
-
-  const titulo = document.getElementById('titulo').value.trim();
-  const autor = document.getElementById('autor').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const modalidadEl = document.querySelector('input[name="modalidad"]:checked');
-  const modalidad = modalidadEl ? modalidadEl.value : '';
-  const file = fileInput.files[0];
-
-  if (!currentEje){ showError('Elegí primero un eje en el tablero.'); return; }
-  if (!titulo || !autor || !email){ showError('Completá título, autor/a y correo electrónico.'); return; }
-  if (!modalidad){ showError('Elegí si vas a presentar un resumen o un trabajo completo.'); return; }
-  if (!file){ showError('Adjuntá el archivo PDF de tu trabajo.'); return; }
-  if (file.type !== 'application/pdf'){ showError('El archivo debe ser un PDF.'); return; }
-  if (file.size > 10 * 1024 * 1024){ showError('El archivo supera los 10 MB permitidos.'); return; }
-
-  submitBtn.disabled = true;
-  startFakeProgress();
-
-  try{
-    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-    const path = `${Date.now()}_${safeName}`;
-
-    const { error: uploadError } = await supabase.storage.from('pdfs').upload(path, file, {
-      cacheControl: '3600', upsert: false
-    });
-    if (uploadError) throw uploadError;
-
-    // Keep the bucket private: store the Storage object path, not a public URL.
-    const { error: insertError } = await supabase.from('documentos').insert([{
-      titulo, autor, email, eje: currentEje, modalidad, url: path, storage_path: path
-    }]);
-    if (insertError) throw insertError;
-
-    finishProgress(true);
-    form.reset();
-    fileNameEl.textContent = '';
-    fileDropText.textContent = 'Hacé click o arrastrá tu PDF acá';
-    formStep.style.display = 'none';
-    confirmScreen.classList.add('active');
-  }catch(err){
-    finishProgress(false);
-    showError('No pudimos enviar tu trabajo. ' + (err.message || 'Probá de nuevo en unos minutos.'));
-  }finally{
-    submitBtn.disabled = false;
-  }
-});
-
-document.getElementById('confirmAgain').addEventListener('click', () => {
-  formStep.style.display = '';
-  confirmScreen.classList.remove('active');
-  document.getElementById('ejes').scrollIntoView({ behavior:'smooth' });
-});
-
-/* ---------- Nav toggle (mobile) ---------- */
+// El formulario público está cerrado; no se inicializan sus eventos.\n\n/* ---------- Nav toggle (mobile) ---------- */
 const navToggle = document.getElementById('navToggle');
 const navLinks = document.getElementById('navLinks');
 navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
